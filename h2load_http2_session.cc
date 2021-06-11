@@ -368,37 +368,28 @@ int Http2Session::_submit_request()
 
   nghttp2_data_provider prd{{0}, buffer_read_callback};
 
-  std::vector<nghttp2_nv> http2_nvs;
   auto data = client_->get_request_to_submit();
 
-  http2_nvs.reserve(data.req_headers.size() + 4);
+  std::vector<nghttp2_nv>* http2_nvs = data.http2_nvs;
 
-  static std::string path_header_name = ":path";
-  http2_nvs.push_back(http2::make_nv(path_header_name, data.path, false));
+  (*http2_nvs)[0].value = (uint8_t*)data.path.c_str();
+  (*http2_nvs)[0].valuelen = data.path.size();
 
-  static std::string scheme_header_name = ":scheme";
-  http2_nvs.push_back(http2::make_nv(scheme_header_name, config->scheme, false));
-  std::string authority;
-  if (config->port != config->default_port)
+  size_t nvs_size = (*http2_nvs).size();
+  std::string content_length;
+  if (data.req_payload_size)
   {
-      authority = config->host + ":" + util::utos(config->port);
+      content_length = std::to_string(data.req_payload_size);
+      (*http2_nvs)[http2_nvs->size()-1].value = (uint8_t*)content_length.c_str();
+      (*http2_nvs)[http2_nvs->size()-1].valuelen = content_length.size();
   }
   else
   {
-      authority = config->host;
+      nvs_size = (*http2_nvs).size() - 1;
   }
-  static std::string authority_header_name = ":authority";
-  http2_nvs.push_back(http2::make_nv(authority_header_name, authority, false));
-
-  static std::string method_header_name = ":method";
-  http2_nvs.push_back(http2::make_nv(method_header_name, data.method, false));
-
-  for (auto &header : data.req_headers) {
-    http2_nvs.push_back(http2::make_nv(header.first, header.second, false));
-  }
-
+  
   int32_t stream_id =
-      nghttp2_submit_request(session_, nullptr, http2_nvs.data(), http2_nvs.size(),
+      nghttp2_submit_request(session_, nullptr, (*http2_nvs).data(), nvs_size,
                              data.req_payload.empty() ? nullptr : &prd, nullptr);
   if (stream_id < 0) {
     return -1;

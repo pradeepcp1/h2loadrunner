@@ -822,3 +822,45 @@ void convert_CRUD_operation_to_Json_scenarios(h2load::Config& config)
 
     std::cout<<"Scenarios to run:"<<std::endl<<staticjson::to_pretty_json_string(config.json_config_schema)<<std::endl;
 }
+
+void prepare_http2_nvas(h2load::Config& config)
+{
+  static std::string authority;
+  for (auto& scenario: config.json_config_schema.scenarios)
+  {
+    auto& http2_nvs = scenario.http2_nvs;
+    http2_nvs.reserve(scenario.headers_in_map.size() + 4);
+    
+    static std::string path_header_name = ":path";
+    http2_nvs.push_back(http2::make_nv(path_header_name, "STUB_PATH", false));
+    
+    static std::string scheme_header_name = ":scheme";
+    http2_nvs.push_back(http2::make_nv(scheme_header_name, config.scheme, false));
+    if (authority.empty())
+    {
+        if (config.port != config.default_port)
+        {
+            authority = config.host + ":" + util::utos(config.port);
+        }
+        else
+        {
+            authority = config.host;
+        }
+    }
+    static std::string authority_header_name = ":authority";
+    http2_nvs.push_back(http2::make_nv(authority_header_name, authority, false));
+    
+    static std::string method_header_name = ":method";
+    http2_nvs.push_back(http2::make_nv(method_header_name, scenario.method, false));
+    
+    for (auto &header : scenario.headers_in_map)
+    {
+        http2_nvs.push_back(http2::make_nv(header.first, header.second, false));
+    }
+    
+    static std::string content_length_header_name = "Content-Length";
+    http2_nvs.push_back(http2::make_nv(content_length_header_name, "0", false));
+
+  }
+
+}

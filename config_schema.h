@@ -6,6 +6,7 @@
 #include "staticjson/staticjson.hpp"
 #include "rapidjson/schema.h"
 #include "rapidjson/prettywriter.h"
+#include <http2.h>
 
 class Path {
 public:
@@ -29,6 +30,7 @@ public:
     std::string payload;
     std::vector<std::string> additonalHeaders;
     std::map<std::string, std::string> headers_in_map;
+    std::vector<nghttp2_nv> http2_nvs;
     void staticjson_init(staticjson::ObjectHandler* h)
     {
         h->add_property("path", &this->path);

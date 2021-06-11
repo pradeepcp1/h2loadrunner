@@ -330,10 +330,12 @@ struct Request_Data {
   std::string path;
   uint64_t user_id;
   std::string method;
+  int64_t req_payload_size;
   std::map<std::string, std::string> req_headers;
   std::string resp_payload;
   std::map<std::string, std::string> resp_headers;
   uint16_t status_code;
+  std::vector<nghttp2_nv>* http2_nvs;
   size_t next_request;
 };
 

@@ -93,5 +93,6 @@ void convert_CRUD_operation_to_Json_scenarios(h2load::Config& config);
 
 void insert_customized_headers_to_Json_schema(h2load::Config& config);
 
+void prepare_http2_nvas(h2load::Config& config);
 
 #endif

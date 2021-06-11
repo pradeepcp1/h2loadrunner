@@ -1196,6 +1196,8 @@ int main(int argc, char **argv) {
     convert_CRUD_operation_to_Json_scenarios(config);
   }
 
+  prepare_http2_nvas(config);
+
   resolve_host(config);
 
   std::cout << "starting benchmark..." << std::endl;

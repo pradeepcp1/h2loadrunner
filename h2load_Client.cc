@@ -1029,12 +1029,15 @@ void Client::replace_variable(std::string& input, const std::string& variable_na
 
 void Client::update_content_length(Request_Data& data)
 {
+/*
     if (data.req_payload.size())
     {
         std::string content_length = "Content-Length";
         data.req_headers.erase(content_length);
         data.req_headers[content_length] = std::to_string(data.req_payload.size());
     }
+*/
+    data.req_payload_size = data.req_payload.size();
 }
 Request_Data Client::get_request_to_submit()
 {
@@ -1050,7 +1053,8 @@ Request_Data Client::get_request_to_submit()
         data.path = config->json_config_schema.scenarios[0].path.input;
         data.method = config->json_config_schema.scenarios[0].method;
         data.req_payload = config->json_config_schema.scenarios[0].payload;
-        data.req_headers = config->json_config_schema.scenarios[0].headers_in_map;
+        //data.req_headers = config->json_config_schema.scenarios[0].headers_in_map;
+        data.http2_nvs = &config->json_config_schema.scenarios[0].http2_nvs;
         data.user_id = curr_req_variable_value;
         replace_variable(data.path, config->json_config_schema.variable_name_in_path_and_data, data.user_id);
         replace_variable(data.req_payload, config->json_config_schema.variable_name_in_path_and_data, data.user_id);
@@ -1080,7 +1084,8 @@ bool Client::prepare_next_request(const Request_Data& finished_request)
     data.user_id = finished_request.user_id;
     data.method = config->json_config_schema.scenarios[finished_request.next_request].method;
     data.req_payload = config->json_config_schema.scenarios[finished_request.next_request].payload;
-    data.req_headers = config->json_config_schema.scenarios[finished_request.next_request].headers_in_map;
+    //data.req_headers = config->json_config_schema.scenarios[finished_request.next_request].headers_in_map;
+    data.http2_nvs = &config->json_config_schema.scenarios[finished_request.next_request].http2_nvs;
     replace_variable(data.path, config->json_config_schema.variable_name_in_path_and_data, data.user_id);
     replace_variable(data.req_payload, config->json_config_schema.variable_name_in_path_and_data, data.user_id);
     update_content_length(data);
